@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cardtap/src/network/domain.dart';
 import 'package:cardtap/src/network/model/login/card_id_info.dart';
 import 'package:cardtap/widgets/dialogs/toast_wrapper.dart';
@@ -14,9 +16,22 @@ class HomeBloc extends Cubit<HomeState> {
   }
 
   Domain get _domain => GetIt.I<Domain>();
+  late Timer timer;
 
   void init() {
     startNfcSession();
+  }
+
+  void reloadTime() {
+    var countdown = state.countdown;
+    timer = Timer.periodic(const Duration(seconds: 1), (Timer t) {
+      countdown--;
+      emit(state.copyWith(countdown: countdown));
+      if (state.countdown == 0) {
+        onResetData();
+        t.cancel();
+      }
+    });
   }
 
   void startNfcSession() async {
@@ -29,29 +44,28 @@ class HomeBloc extends Cubit<HomeState> {
       onDiscovered: (NfcTag tag) async {
         if (tag.data.containsKey('nfca') &&
             tag.data['nfca'].containsKey('identifier')) {
-          processNFCData(tag.data['nfca']['identifier']);
+          _processNFCData(tag.data['nfca']['identifier']);
         } else if (tag.data.containsKey('mifareclassic') &&
             tag.data['mifareclassic'].containsKey('identifier')) {
-          processNFCData(tag.data['mifareclassic']['identifier']);
+          _processNFCData(tag.data['mifareclassic']['identifier']);
         } else if (tag.data.containsKey('ndefformatable') &&
             tag.data['ndefformatable'].containsKey('identifier')) {
-          processNFCData(tag.data['ndefformatable']['identifier']);
+          _processNFCData(tag.data['ndefformatable']['identifier']);
         } else {
           XToast.show("Thẻ NFC không có UID");
         }
         emit(state.copyWith(nfcData: tag));
       },
     );
-
-    // NfcManager.instance.stopSession();
   }
 
-  void processNFCData(List<int> uid) {
-    final String cardId = convertToDecimal(uid);
-    getCardIdInfo(cardId);
+  Future<void> _processNFCData(List<int> uid) async {
+    final String cardId = _convertToDecimal(uid);
+    await getCardIdInfo(cardId);
+    NfcManager.instance.stopSession();
   }
 
-  String convertToDecimal(List<int> uid) {
+  String _convertToDecimal(List<int> uid) {
     List<int> reversedUid = uid.reversed.toList();
     String hexString = reversedUid
         .map((value) => value.toRadixString(16).toUpperCase())
@@ -67,7 +81,8 @@ class HomeBloc extends Cubit<HomeState> {
     if (value.isSuccess) {
       _emitIfOpen(state.copyWith(cardInfo: value.data));
       final phoneNumber = value.data?.data?.single.phoneNumber ?? "";
-      XToast.show(phoneNumber);
+      reloadTime();
+      _emitIfOpen(state.copyWith(isLoadingCallApi: true));
 
       await Future.delayed(
         const Duration(seconds: 4),
@@ -95,21 +110,26 @@ class HomeBloc extends Cubit<HomeState> {
         XToast.show("Điện thoại bận");
       } else if (value.data!.isEmpty) {}
     } else {
-      XToast.error("Error");
+      XToast.error("Không kết nối được với điện thoại");
     }
+    _emitIfOpen(state.copyWith(isLoadingCallApi: false));
   }
 
-  // Future<void> _makePhoneCall(String phoneNumber) async {
-  //   final Uri launchUri = Uri(
-  //     scheme: 'tel',
-  //     path: phoneNumber,
-  //   );
-  //   await launchUrl(launchUri);
-  // }
+  void onResetData() {
+    _emitIfOpen(const HomeState());
+    startNfcSession();
+    timer.cancel();
+  }
 
   void _emitIfOpen(HomeState newState) {
     if (!isClosed) {
       emit(newState);
     }
+  }
+
+  @override
+  Future<void> close() {
+    timer.cancel();
+    return super.close();
   }
 }
