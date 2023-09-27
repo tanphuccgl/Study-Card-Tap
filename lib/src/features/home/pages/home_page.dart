@@ -14,6 +14,23 @@ class HomePage extends StatelessWidget {
       child: BlocBuilder<HomeBloc, HomeState>(
         builder: (context, state) {
           if (state.cardInfo == null) {
+            if (state.isLoadingDataNfc) {
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  XIndicator(),
+                  SizedBox(height: 20),
+                  Text(
+                    "Đang lấy thông tin thẻ NFC",
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                    ),
+                  ),
+                ],
+              );
+            }
             return Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [

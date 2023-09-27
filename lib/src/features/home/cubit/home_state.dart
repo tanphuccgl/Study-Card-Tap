@@ -6,11 +6,14 @@ class HomeState extends Equatable {
   final NfcTag? nfcData;
   final bool isLoadingCallApi;
   final int countdown;
+  final bool isLoadingDataNfc;
+
   const HomeState({
     this.cardInfo,
     this.nfcData,
     this.isLoadingCallApi = false,
     this.countdown = 30,
+    this.isLoadingDataNfc = false,
   });
 
   @override
@@ -19,6 +22,7 @@ class HomeState extends Equatable {
         nfcData,
         isLoadingCallApi,
         countdown,
+        isLoadingDataNfc,
       ];
 
   HomeState copyWith({
@@ -26,12 +30,14 @@ class HomeState extends Equatable {
     NfcTag? nfcData,
     bool? isLoadingCallApi,
     int? countdown,
+    bool? isLoadingDataNfc,
   }) {
     return HomeState(
       cardInfo: cardInfo ?? this.cardInfo,
       nfcData: nfcData ?? this.nfcData,
       isLoadingCallApi: isLoadingCallApi ?? this.isLoadingCallApi,
       countdown: countdown ?? this.countdown,
+      isLoadingDataNfc: isLoadingDataNfc ?? this.isLoadingDataNfc,
     );
   }
 }
