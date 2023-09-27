@@ -1,3 +1,4 @@
+import 'package:cardtap/src/config/constants/images.dart';
 import 'package:cardtap/src/features/home/cubit/home_bloc.dart';
 import 'package:cardtap/widgets/common/indicator.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +14,21 @@ class HomePage extends StatelessWidget {
       child: BlocBuilder<HomeBloc, HomeState>(
         builder: (context, state) {
           if (state.cardInfo == null) {
-            return const Center(child: Text("Quét thẻ NFC"));
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(XImage.nfc, width: 250, height: 250),
+                const SizedBox(height: 20),
+                const Text(
+                  "Quét thẻ NFC",
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                  ),
+                ),
+              ],
+            );
           }
           final studentData = state.cardInfo!.data!.single;
           const gap10 = SizedBox(height: 10);
