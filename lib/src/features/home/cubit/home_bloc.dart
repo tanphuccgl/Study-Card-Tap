@@ -38,6 +38,7 @@ class HomeBloc extends Cubit<HomeState> {
     bool isAvailable = await NfcManager.instance.isAvailable();
     if (isAvailable == false) {
       XToast.show("Không hỗ trợ NFC");
+      return;
     }
 
     NfcManager.instance.startSession(
@@ -60,6 +61,7 @@ class HomeBloc extends Cubit<HomeState> {
   }
 
   Future<void> _processNFCData(List<int> uid) async {
+    emit(state.copyWith(isLoadingDataNfc: true));
     final String cardId = _convertToDecimal(uid);
     await getCardIdInfo(cardId);
     NfcManager.instance.stopSession();
@@ -79,7 +81,10 @@ class HomeBloc extends Cubit<HomeState> {
     final value = await _domain.userRepository.getCardIdInfo(cardId);
 
     if (value.isSuccess) {
-      _emitIfOpen(state.copyWith(cardInfo: value.data));
+      _emitIfOpen(state.copyWith(
+        cardInfo: value.data,
+        isLoadingDataNfc: false,
+      ));
       final phoneNumber = value.data?.data?.single.phoneNumber ?? "";
       reloadTime();
       _emitIfOpen(state.copyWith(isLoadingCallApi: true));
@@ -92,7 +97,10 @@ class HomeBloc extends Cubit<HomeState> {
         ),
       );
     } else {
+      emit(state.copyWith(isLoadingDataNfc: false));
       XToast.error("Lấy dữ liệu thất bại");
+      await Future.delayed(const Duration(seconds: 1));
+      startNfcSession();
     }
   }
 
