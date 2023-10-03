@@ -23,7 +23,7 @@ class UserRepositoryImpl extends UserRepository {
 
       return result.success == true
           ? XResult.success(result)
-          : XResult.error("");
+          : XResult.error(result.error.toString());
     } catch (e, a) {
       LoggerHelper.error('> GET getCardIdInfo CATCH Error< $e $a');
 

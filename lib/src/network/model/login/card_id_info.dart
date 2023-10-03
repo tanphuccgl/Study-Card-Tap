@@ -1,8 +1,12 @@
 class CardIDInfo {
   bool? success;
   List<Data>? data;
-
-  CardIDInfo({this.success, this.data});
+  String? error;
+  CardIDInfo({
+    this.success,
+    this.data,
+    this.error,
+  });
 
   CardIDInfo.fromJson(Map<String, dynamic> json) {
     success = json['success'];
@@ -12,6 +16,7 @@ class CardIDInfo {
         data!.add(Data.fromJson(v));
       });
     }
+    error = json['error'];
   }
 
   Map<String, dynamic> toJson() {
@@ -20,6 +25,7 @@ class CardIDInfo {
     if (this.data != null) {
       data['data'] = this.data!.map((v) => v.toJson()).toList();
     }
+    data['error'] = error;
     return data;
   }
 }

@@ -98,7 +98,7 @@ class HomeBloc extends Cubit<HomeState> {
       );
     } else {
       emit(state.copyWith(isLoadingDataNfc: false));
-      XToast.error("Lấy dữ liệu thất bại");
+      XToast.error(value.error ?? "Lấy dữ liệu thất bại");
       await Future.delayed(const Duration(seconds: 1));
       startNfcSession();
     }
