@@ -69,9 +69,10 @@ class HomeBloc extends Cubit<HomeState> {
 
   String _convertToDecimal(List<int> uid) {
     List<int> reversedUid = uid.reversed.toList();
-    String hexString = reversedUid
-        .map((value) => value.toRadixString(16).toUpperCase())
-        .join('');
+    String hexString = reversedUid.map((value) {
+      String hex = value.toRadixString(16).padLeft(2, '0').toUpperCase();
+      return hex;
+    }).join('');
     int decimalValue = int.parse(hexString, radix: 16);
     String decimalString = decimalValue.toString().padLeft(10, '0');
     return decimalString;
